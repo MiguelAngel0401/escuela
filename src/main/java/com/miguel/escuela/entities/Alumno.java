@@ -2,8 +2,11 @@ package com.miguel.escuela.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ALUMNOS")
@@ -35,5 +38,9 @@ public class Alumno {
     private String matricula;
 
     @Column(name = "FECHA_INGRESO")
-    private LocalDate fechaIngreso;
+    private LocalDate fechaIngreso = LocalDate.now();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "alumno")
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 }

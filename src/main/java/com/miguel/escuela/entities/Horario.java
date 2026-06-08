@@ -22,8 +22,7 @@ public class Horario {
     @JoinColumn(name = "ID_GRUPO", nullable = false)
     private Grupo grupo;
 
-    @Column(name = "DIA", length = 15, nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Column(name = "DIA", nullable = false)
     private DiaSemana dia;
 
     @Column(name = "HORA_INICIO", length = 5, nullable = false)
