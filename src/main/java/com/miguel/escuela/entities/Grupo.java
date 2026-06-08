@@ -3,6 +3,9 @@ package com.miguel.escuela.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity // anotacion que conecta la clase con la tabla a la bd
 @Table(name = "GRUPOS", // nombre exacto de la tabla en Oracle
 uniqueConstraints = @UniqueConstraint( // aqui hay un unique compuesto
@@ -34,4 +37,12 @@ public class Grupo {
 
     @Column(name = "PERIODO",length = 20, nullable = false)
     private String periodo;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "grupo")
+    private List<Horario> horarios = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "grupo")
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 }

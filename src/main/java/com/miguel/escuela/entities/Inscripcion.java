@@ -32,4 +32,7 @@ public class Inscripcion {
 
     @Column(name = "FECHA_INSCRIPCION")
     private LocalDate fechaInscripcion;
+
+    @OneToOne(mappedBy = "inscripcion")
+    private Calificacion calificacion;
 }

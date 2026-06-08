@@ -3,6 +3,9 @@ package com.miguel.escuela.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "MAESTROS")
 @AllArgsConstructor
@@ -30,4 +33,8 @@ public class Maestro {
 
     @Column(name = "TELEFONO", length = 10, unique = true, nullable = false)
     private String telefono;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "maestro")
+    private List<Grupo> grupos = new ArrayList<>();
 }
