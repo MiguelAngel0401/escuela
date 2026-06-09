@@ -1,5 +1,6 @@
 package com.miguel.escuela.entities;
 
+import com.miguel.escuela.utils.StringCustomUtils;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,4 +38,35 @@ public class Maestro {
     @Builder.Default
     @OneToMany(mappedBy = "maestro")
     private List<Grupo> grupos = new ArrayList<>();
+
+    public void actualizar(String nombre, String apellidoPaterno, String apellidoMaterno
+    ,String email, String telefono){
+
+        validarDatos(nombre, apellidoPaterno, apellidoMaterno,email,telefono);
+
+        this.nombre = nombre.trim();
+        this.apellidoPaterno = apellidoPaterno.trim();
+        this.apellidoMaterno = apellidoMaterno.trim();
+        this.email = email.toLowerCase().trim();
+        this.telefono = telefono.trim();
+    }
+    private void validarDatos(
+            String nombre, String apellidoPaterno,
+            String apellidoMaterno, String email, String telefono) {
+
+        StringCustomUtils.validarTamanio(nombre.trim(), 4, 50,
+                "El nombre es requerido y debe tener entre 4 y 50 caracteres");
+
+        StringCustomUtils.validarTamanio(apellidoPaterno.trim(), 4, 50,
+                "El apellido paterno es requerido y debe tener entre 4 y 50 caracteres");
+
+        StringCustomUtils.validarTamanio(apellidoMaterno.trim(), 4, 50,
+                "El apellido materno es requerido y debe tener entre 4 y 50 caracteres");
+
+        StringCustomUtils.validarTamanio(email.trim(), 8, 100,
+                "El email es requerido y debe tener entre 8 y 100 caracteres");
+
+        StringCustomUtils.validarTamanio(telefono.trim(), 10, 10,
+                "El telefono es requerido y debe tener exactamente 10 caracteres");
+    }
 }
