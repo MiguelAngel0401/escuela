@@ -1,5 +1,6 @@
 package com.miguel.escuela.entities;
 
+import com.miguel.escuela.utils.StringCustomUtils;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,4 +30,18 @@ public class Aula {
     @OneToMany(mappedBy = "aula")
     private List<Grupo> grupos = new ArrayList<>();
 
+    public void actualizar(String nombre, Integer capacidad) {
+        validarDatos(nombre, capacidad);
+        this.nombre = nombre.trim();
+        this.capacidad = capacidad;
+    }
+
+    private void validarDatos(String nombre, Integer capacidad) {
+        StringCustomUtils.validarTamanio(nombre.trim(), 2, 50,
+                "El nombre del aula es requerido y debe tener entre 2 y 50 caracteres");
+
+        if (capacidad == null || capacidad <= 0) {
+            throw new IllegalArgumentException("La capacidad debe ser un número positivo");
+        }
+    }
 }
