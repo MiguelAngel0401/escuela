@@ -5,14 +5,14 @@ import jakarta.validation.constraints.Size;
 
 public record AlumnoRequest(
         @NotBlank(message = "El nombre es requerido")
-        @Size(min = 5, max = 50, message = "El nombre del alumno debe tener entre 7 y 50 caracteres")
+        @Size(min = 4, max = 50, message = "El nombre del alumno debe tener entre 4 y 50 caracteres")
         String nombre,
 
-        @NotBlank(message = "El apellidio paterno es requerido")
-        @Size(min = 5, max = 50, message = "El apellido paterno es requerido")
+        @NotBlank(message = "El apellido paterno es requerido")
+        @Size(min = 4, max = 50, message = "El apellido paterno del alumno debe tener entre 4 y 50 caracteres")
         String apellidoPaterno,
 
         @NotBlank(message = "El apellido materno es requerido")
-        @Size(min = 5, max = 50, message = "El apellido paterno es requerido")
+        @Size(min = 4, max = 50, message = "El apellido materno del alumno debe tener entre 4 y 50 caracteres")
         String apellidoMaterno
 ) {}

@@ -2,7 +2,6 @@ package com.miguel.escuela.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -43,4 +42,11 @@ public class Alumno {
     @Builder.Default
     @OneToMany(mappedBy = "alumno")
     private List<Inscripcion> inscripciones = new ArrayList<>();
-}
+
+    public void actualizar(String nombre, String apellidoPaterno, String apellidoMaterno, String email, String matricula) {
+        this.nombre = nombre;
+        this.apellidoPaterno = apellidoPaterno;
+        this.apellidoMaterno = apellidoMaterno;
+        this.email = email;
+        this.matricula = matricula;
+    }}

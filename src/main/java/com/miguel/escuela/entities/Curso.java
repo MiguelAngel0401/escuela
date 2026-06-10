@@ -42,14 +42,15 @@ public class Curso {
         this.creditos = creditos;
     }
     private void validarDatos(String nombre, String descripcion, Integer creditos) {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
-        }
-        if (descripcion == null || descripcion.trim().isEmpty()) {
-            throw new IllegalArgumentException("La descripción no puede estar vacía");
-        }
-        if (creditos == null || creditos <= 0) {
+        StringCustomUtils.validarTamanio(nombre.trim(), 5, 100,
+                "El nombre es requerido y debe tener entre 5 y 100 caracteres");
+
+        if (descripcion != null)
+            StringCustomUtils.validarTamanio(descripcion.trim(), 1, 200,
+                    "La descripcion debe tener maximo 200 caracteres");
+
+        if (creditos == null || creditos <= 0)
             throw new IllegalArgumentException("Los créditos deben ser mayores a cero");
-        }
+
     }
 }
