@@ -10,7 +10,7 @@ public record CursoRequest(
         @Size( max = 200, message = "La descripcion debe tener maximo 200 caracteres")
         String descripcion,
 
-        @NotBlank(message = "Los creditos son requeridos")
+        @NotNull(message = "Los creditos son requeridos")
         @Min(value = 1, message = "Los creditos minimos son 1")
         @Max(value = 10, message = "Los creditos maximos son 10")
         Integer creditos

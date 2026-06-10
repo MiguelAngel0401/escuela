@@ -1,5 +1,6 @@
 package com.miguel.escuela.entities;
 
+import com.miguel.escuela.utils.StringCustomUtils;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,4 +33,23 @@ public class Curso {
     @OneToMany(mappedBy = "curso")
     private List<Grupo> grupos = new ArrayList<>();
 
+    public void actualizar(String nombre, String descripcion, Integer creditos){
+
+        validarDatos(nombre, descripcion, creditos);
+
+        this.nombre = nombre.trim();
+        this.descripcion = descripcion;
+        this.creditos = creditos;
+    }
+    private void validarDatos(String nombre, String descripcion, Integer creditos) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            throw new IllegalArgumentException("La descripción no puede estar vacía");
+        }
+        if (creditos == null || creditos <= 0) {
+            throw new IllegalArgumentException("Los créditos deben ser mayores a cero");
+        }
+    }
 }
