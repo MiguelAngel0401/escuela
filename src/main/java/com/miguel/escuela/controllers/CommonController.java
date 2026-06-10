@@ -13,27 +13,29 @@ import java.util.List;
 
 @AllArgsConstructor
 @Validated
-public class CommonController<RQ, RS, S extends CrudService <RQ, RS>> {
+public class CommonController<RQ, RS, S extends CrudService<RQ, RS>> {
 
-    protected  final S service;
+    protected final S service;
+
     @GetMapping
-    public ResponseEntity<List <RS>> listar(){
+    public ResponseEntity<List<RS>> listar() {
         return ResponseEntity.ok(service.listar());
     }
 
     @GetMapping("/{id}")
-    public  ResponseEntity <RS> obtenerPorId(
-            @PathVariable@Positive(message = "El ID debe ser positivo") Long id) {
-        return  ResponseEntity.ok(service.obtenerPorId(id));
+    public ResponseEntity<RS> obtenerPorId(
+            @PathVariable @Positive(message = "El ID debe ser positivo") Long id) {
+        return ResponseEntity.ok(service.obtenerPorId(id));
     }
 
     @PostMapping
     public ResponseEntity<RS> registrar(
             @Valid @RequestBody RQ request) {
-        return  ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(request));
     }
+
     @PutMapping("/{id}")
-    public  ResponseEntity<RS> actualizar(
+    public ResponseEntity<RS> actualizar(
             @PathVariable @Positive(message = "El ID debe ser positivo") Long id,
             @Valid @RequestBody RQ request) {
         return ResponseEntity.ok(service.actualizar(request, id));
