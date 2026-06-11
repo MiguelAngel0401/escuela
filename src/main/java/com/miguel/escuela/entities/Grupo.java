@@ -45,4 +45,11 @@ public class Grupo {
     @Builder.Default
     @OneToMany(mappedBy = "grupo")
     private List<Inscripcion> inscripciones = new ArrayList<>();
+
+    public void actualizar(Curso curso, Maestro maestro, Aula aula, String periodo) {
+        this.curso = curso;
+        this.maestro = maestro;
+        this.aula = aula;
+        this.periodo = periodo.trim();
+    }
 }

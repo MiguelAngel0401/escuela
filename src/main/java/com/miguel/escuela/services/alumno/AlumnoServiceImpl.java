@@ -32,8 +32,7 @@ public class AlumnoServiceImpl implements AlumnoService {
     public List<AlumnoResponse> listar() {
         log.info("Listado de todos los alumnos solicitados");
         return alumnoRepository.findAll().stream()
-                .map(alumnoMapper::entidadAResponse)
-                .toList();
+                .map(alumnoMapper::entidadAResponse).toList();
     }
 
     @Override
@@ -45,58 +44,53 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Override
     public AlumnoResponse registrar(AlumnoRequest request) {
         log.info("Registrando nuevo alumno ...");
-        String email = generarEmailAutomatico(request.nombre(), request.apellidoPaterno());
-        String matricula = generarMatriculaAutomatica();
 
-        if (alumnoRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Ya existe un alumno registrado con el email generado: " + email);
-        }
+        String email = generarEmail(request.nombre(), request.apellidoPaterno());
+
+        if (alumnoRepository.existsByEmail(email))
+            throw new IllegalArgumentException("Ya existe un alumno con ese email: " + email);
+
         Alumno alumno = alumnoMapper.requestAEntidad(request);
         alumno.setEmail(email);
-        alumno.setMatricula(matricula);
+        alumno.setMatricula(generarMatricula());
         alumno.setFechaIngreso(LocalDate.now());
 
         alumnoRepository.save(alumno);
-        log.info("Nuevo alumno {} registrado", alumno.getNombre());
+        log.info("Alumno {} registrado", alumno.getNombre());
         return alumnoMapper.entidadAResponse(alumno);
     }
 
     @Override
     public AlumnoResponse actualizar(AlumnoRequest request, Long id) {
-        Alumno alumnoExistente = obtenerAlumno(id);
+        Alumno alumno = obtenerAlumno(id);
 
         log.info("Actualizando alumno con id: {}", id);
 
-        boolean nombresCambiaron = !alumnoExistente.getNombre().equalsIgnoreCase(request.nombre().trim())
-                || !alumnoExistente.getApellidoPaterno().equalsIgnoreCase(request.apellidoPaterno().trim())
-                || !alumnoExistente.getApellidoMaterno().equalsIgnoreCase(request.apellidoMaterno().trim());
+        String nuevoEmail = generarEmail(request.nombre(), request.apellidoPaterno());
 
-        alumnoExistente.setNombre(request.nombre().trim());
-        alumnoExistente.setApellidoPaterno(request.apellidoPaterno().trim());
-        alumnoExistente.setApellidoMaterno(request.apellidoMaterno().trim());
+        if (alumnoRepository.existsByEmailAndIdNot(nuevoEmail, id))
+            throw new IllegalArgumentException("El email generado ya está en uso: " + nuevoEmail);
 
-        if (nombresCambiaron) {
-            String nuevoEmail = generarEmailAutomatico(request.nombre(), request.apellidoPaterno());
+        alumno.actualizar(
+                request.nombre(),
+                request.apellidoPaterno(),
+                request.apellidoMaterno(),
+                nuevoEmail,
+                generarMatricula());
 
-            if (alumnoRepository.existsByEmailAndIdNot(nuevoEmail, id)) {
-                throw new IllegalArgumentException("El nuevo email generado ya está en uso por otro alumno: " + nuevoEmail);
-            }
-
-            alumnoExistente.setEmail(nuevoEmail);
-            alumnoExistente.setMatricula(generarMatriculaAutomatica());
-        }
-        alumnoRepository.save(alumnoExistente);
-        return alumnoMapper.entidadAResponse(alumnoExistente);
+        alumnoRepository.save(alumno);
+        return alumnoMapper.entidadAResponse(alumno);
     }
+
     @Override
     public void eliminar(Long id) {
         Alumno alumno = obtenerAlumno(id);
 
         log.info("Eliminando alumno con id: {}", id);
 
-        if (inscripcionRepository.existsByAlumnoId(id)) {
-            throw new EntidadRelacionadaException("No se puede eliminar al alumno porque cuenta con materias inscritas asociadas");
-        }
+        if (inscripcionRepository.existsByAlumnoId(id))
+            throw new EntidadRelacionadaException("No se puede eliminar al alumno porque tiene inscripciones asociadas");
+
         alumnoRepository.delete(alumno);
         log.info("Alumno con id {} eliminado", id);
     }
@@ -105,15 +99,16 @@ public class AlumnoServiceImpl implements AlumnoService {
         return ServiceUtils.obtenerEntidadOException(alumnoRepository, id, Alumno.class);
     }
 
-    private String generarEmailAutomatico(String nombre, String apellidoPaterno) {
+    private String generarEmail(String nombre, String apellidoPaterno) {
         String primerNombre = nombre.trim().split(" ")[0];
         return (primerNombre + "." + apellidoPaterno.trim()).toLowerCase() + "@alumnos.com";
     }
 
-    private String generarMatriculaAutomatica() {
-        String anioActual = String.valueOf(LocalDate.now().getYear());
-        long siguienteConsecutivo = alumnoRepository.count() + 1;
-        String formatoConsecutivo = String.format("%03d", siguienteConsecutivo);
-        return "A" + anioActual + formatoConsecutivo;
+    private String generarMatricula() {
+        String anio = String.valueOf(LocalDate.now().getYear());
+        long consecutivo = alumnoRepository.findTopByOrderByIdDesc()
+                .map(Alumno::getId)
+                .orElse(0L) + 1;
+        return "A" + anio + String.format("%03d", consecutivo);
     }
 }
