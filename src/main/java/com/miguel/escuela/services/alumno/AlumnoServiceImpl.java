@@ -45,14 +45,22 @@ public class AlumnoServiceImpl implements AlumnoService {
     public AlumnoResponse registrar(AlumnoRequest request) {
         log.info("Registrando nuevo alumno ...");
 
-        String email = generarEmail(request.nombre(), request.apellidoPaterno());
+        String email = alumnoRepository.generarCorreo(
+                request.nombre(),
+                request.apellidoPaterno(),
+                request.apellidoMaterno());
 
         if (alumnoRepository.existsByEmail(email))
             throw new IllegalArgumentException("Ya existe un alumno con ese email: " + email);
 
+        String matricula = alumnoRepository.generarMatricula(
+                request.nombre(),
+                request.apellidoPaterno(),
+                request.apellidoMaterno());
+
         Alumno alumno = alumnoMapper.requestAEntidad(request);
         alumno.setEmail(email);
-        alumno.setMatricula(generarMatricula());
+        alumno.setMatricula(matricula);
         alumno.setFechaIngreso(LocalDate.now());
 
         alumnoRepository.save(alumno);
@@ -66,17 +74,25 @@ public class AlumnoServiceImpl implements AlumnoService {
 
         log.info("Actualizando alumno con id: {}", id);
 
-        String nuevoEmail = generarEmail(request.nombre(), request.apellidoPaterno());
+        String nuevoEmail = alumnoRepository.generarCorreo(
+                request.nombre(),
+                request.apellidoPaterno(),
+                request.apellidoMaterno());
 
         if (alumnoRepository.existsByEmailAndIdNot(nuevoEmail, id))
             throw new IllegalArgumentException("El email generado ya está en uso: " + nuevoEmail);
+
+        String nuevaMatricula = alumnoRepository.generarMatricula(
+                request.nombre(),
+                request.apellidoPaterno(),
+                request.apellidoMaterno());
 
         alumno.actualizar(
                 request.nombre(),
                 request.apellidoPaterno(),
                 request.apellidoMaterno(),
                 nuevoEmail,
-                generarMatricula());
+                nuevaMatricula);
 
         alumnoRepository.save(alumno);
         return alumnoMapper.entidadAResponse(alumno);
@@ -97,18 +113,5 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     private Alumno obtenerAlumno(Long id) {
         return ServiceUtils.obtenerEntidadOException(alumnoRepository, id, Alumno.class);
-    }
-
-    private String generarEmail(String nombre, String apellidoPaterno) {
-        String primerNombre = nombre.trim().split(" ")[0];
-        return (primerNombre + "." + apellidoPaterno.trim()).toLowerCase() + "@alumnos.com";
-    }
-
-    private String generarMatricula() {
-        String anio = String.valueOf(LocalDate.now().getYear());
-        long consecutivo = alumnoRepository.findTopByOrderByIdDesc()
-                .map(Alumno::getId)
-                .orElse(0L) + 1;
-        return "A" + anio + String.format("%03d", consecutivo);
     }
 }

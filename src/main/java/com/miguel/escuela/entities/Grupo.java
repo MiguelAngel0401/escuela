@@ -6,11 +6,11 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity // anotacion que conecta la clase con la tabla a la bd
-@Table(name = "GRUPOS", // nombre exacto de la tabla en Oracle
-uniqueConstraints = @UniqueConstraint( // aqui hay un unique compuesto
-        name = "GRUPO_CU_MA_AU_PE_UK", //nombre exacto del constraint de la bd
-        columnNames = {"ID_CURSO", "ID_MAESTRO", "ID_AULA", "PERIODO"} // columnas que conforman el unique
+@Entity
+@Table(name = "GRUPOS",
+uniqueConstraints = @UniqueConstraint(
+        name = "GRUPO_CU_MA_AU_PE_UK",
+        columnNames = {"ID_CURSO", "ID_MAESTRO", "ID_AULA", "PERIODO"}
 ))
 @AllArgsConstructor
 @NoArgsConstructor
