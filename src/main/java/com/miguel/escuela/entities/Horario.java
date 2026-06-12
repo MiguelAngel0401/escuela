@@ -32,4 +32,11 @@ public class Horario {
     @Column(name = "HORA_FIN", length = 5, nullable = false)
     private String horaFin;
 
+    public void actualizar(Grupo grupo, DiaSemana dia, String horaInicio, String horaFin) {
+        this.grupo = grupo;
+        this.dia = dia;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+    }
+
 }

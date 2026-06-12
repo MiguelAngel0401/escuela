@@ -9,7 +9,6 @@ import com.miguel.escuela.utils.StringCustomUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 @Component
@@ -43,7 +42,7 @@ public class AlumnoMapper implements CommonMapper<AlumnoRequest, AlumnoResponse,
                 entidad.getMatricula(),
                 StringCustomUtils.localDateAString(entidad.getFechaIngreso()),
                 calificaciones,
-                calcularPromedio(calificaciones)
+                entidad.calcularPromedio()
         );
     }
 
@@ -67,15 +66,4 @@ public class AlumnoMapper implements CommonMapper<AlumnoRequest, AlumnoResponse,
         );
     }
 
-    private BigDecimal calcularPromedio(List<DatosCalificacion> calificaciones) {
-        List<BigDecimal> noNulas = calificaciones.stream()
-                .map(DatosCalificacion::calificacion)
-                .filter(c -> c != null)
-                .toList();
-
-        if (noNulas.isEmpty()) return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-
-        BigDecimal suma = noNulas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-        return suma.divide(BigDecimal.valueOf(noNulas.size()), 2, RoundingMode.HALF_UP);
-    }
 }

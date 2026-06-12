@@ -28,7 +28,7 @@ public class AulaServiceImpl implements AulaService {
     @Override
     @Transactional(readOnly = true)
     public List<AulaResponse> listar() {
-        log.info("Listado de todas las aulas solicitadas");
+        log.info("Trayendo aulas");
         return aulaRepository.findAll().stream()
                 .map(aulaMapper::entidadAResponse).toList();
     }
@@ -41,14 +41,17 @@ public class AulaServiceImpl implements AulaService {
 
     @Override
     public AulaResponse registrar(AulaRequest request) {
-        log.info("Registrando nueva aula...");
+        log.info("Creando aula nueva");
 
-        validarNombreUnico(request);
+        String nombre = request.nombre().trim();
+
+        if (aulaRepository.existsByNombre(nombre))
+            throw new IllegalArgumentException("Ya hay un aula con el nombre " + nombre);
 
         Aula aula = aulaMapper.requestAEntidad(request);
         aulaRepository.save(aula);
 
-        log.info("Nueva aula {} registrada", aula.getNombre());
+        log.info("Aula {} creada", aula.getNombre());
         return aulaMapper.entidadAResponse(aula);
     }
 
@@ -56,9 +59,12 @@ public class AulaServiceImpl implements AulaService {
     public AulaResponse actualizar(AulaRequest request, Long id) {
         Aula aula = obtenerAula(id);
 
-        log.info("Actualizando aula con id: {}", id);
+        log.info("Actualizando aula {}", id);
 
-        validarCambiosEnNombreUnico(request, id);
+        String nombre = request.nombre().trim();
+
+        if (aulaRepository.existsByNombreAndIdNot(nombre, id))
+            throw new IllegalArgumentException("Ya hay un aula con el nombre " + nombre);
 
         aula.actualizar(request.nombre(), request.capacidad());
 
@@ -70,28 +76,16 @@ public class AulaServiceImpl implements AulaService {
     public void eliminar(Long id) {
         Aula aula = obtenerAula(id);
 
-        log.info("Eliminando aula con id: {}", id);
+        log.info("Eliminando aula {}", id);
 
         if (grupoRepository.existsByAulaId(id))
-            throw new EntidadRelacionadaException("No se puede eliminar el aula que ya tiene grupos asignados");
+            throw new EntidadRelacionadaException("No se puede eliminar, el aula tiene grupos asignados");
 
         aulaRepository.delete(aula);
-        log.info("Aula con id {} eliminada", id);
+        log.info("Aula {} eliminada", id);
     }
 
     private Aula obtenerAula(Long id) {
         return ServiceUtils.obtenerEntidadOException(aulaRepository, id, Aula.class);
-    }
-
-    private void validarNombreUnico(AulaRequest request) {
-        log.info("Validando nombre unico...");
-        if (aulaRepository.existsByNombre(request.nombre().trim()))
-            throw new IllegalArgumentException("Ya existe un aula registrada con el nombre: " + request.nombre());
-    }
-
-    private void validarCambiosEnNombreUnico(AulaRequest request, Long id) {
-        log.info("Validando nombre unico...");
-        if (aulaRepository.existsByNombreAndIdNot(request.nombre().trim(), id))
-            throw new IllegalArgumentException("Ya existe un aula registrada con el nombre: " + request.nombre());
     }
 }

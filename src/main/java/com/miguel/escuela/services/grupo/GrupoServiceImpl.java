@@ -34,7 +34,7 @@ public class GrupoServiceImpl implements GrupoService {
     @Override
     @Transactional(readOnly = true)
     public List<GruposResponse> listar() {
-        log.info("Listado de todos los grupos solicitados");
+        log.info("Consultando grupos");
         return grupoRepository.findAll().stream()
                 .map(grupoMapper::entidadAResponse).toList();
     }
@@ -47,13 +47,17 @@ public class GrupoServiceImpl implements GrupoService {
 
     @Override
     public GruposResponse registrar(GruposRequest request) {
-        log.info("Registrando nuevo grupo ...");
+        log.info("Creando grupo nuevo");
 
         Curso curso = ServiceUtils.obtenerEntidadOException(cursoRepository, request.idCurso(), Curso.class);
         Maestro maestro = ServiceUtils.obtenerEntidadOException(maestroRepository, request.idMaestro(), Maestro.class);
         Aula aula = ServiceUtils.obtenerEntidadOException(aulaRepository, request.idAula(), Aula.class);
 
-        validarGrupoDuplicado(request.idCurso(), request.idMaestro(), request.idAula(), request.periodo());
+        String periodo = request.periodo().trim();
+
+        if (grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodo(
+                request.idCurso(), request.idMaestro(), request.idAula(), periodo))
+            throw new IllegalArgumentException("Ya hay un grupo igual registrado para ese periodo");
 
         Grupo grupo = grupoMapper.requestAEntidad(request);
         grupo.setCurso(curso);
@@ -61,7 +65,7 @@ public class GrupoServiceImpl implements GrupoService {
         grupo.setAula(aula);
 
         grupoRepository.save(grupo);
-        log.info("Nuevo grupo {} registrado", grupo.getId());
+        log.info("Grupo creado con id {}", grupo.getId());
         return grupoMapper.entidadAResponse(grupo);
     }
 
@@ -69,13 +73,17 @@ public class GrupoServiceImpl implements GrupoService {
     public GruposResponse actualizar(GruposRequest request, Long id) {
         Grupo grupo = obtenerGrupo(id);
 
-        log.info("Actualizando grupo con id: {}", id);
+        log.info("Actualizando grupo {}", id);
 
         Curso curso = ServiceUtils.obtenerEntidadOException(cursoRepository, request.idCurso(), Curso.class);
         Maestro maestro = ServiceUtils.obtenerEntidadOException(maestroRepository, request.idMaestro(), Maestro.class);
         Aula aula = ServiceUtils.obtenerEntidadOException(aulaRepository, request.idAula(), Aula.class);
 
-        validarGrupoDuplicadoAlActualizar(request.idCurso(), request.idMaestro(), request.idAula(), request.periodo(), id);
+        String periodo = request.periodo().trim();
+
+        if (grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodoAndIdNot(
+                request.idCurso(), request.idMaestro(), request.idAula(), periodo, id))
+            throw new IllegalArgumentException("Ya hay un grupo igual registrado para ese periodo");
 
         grupo.actualizar(curso, maestro, aula, request.periodo());
 
@@ -87,29 +95,19 @@ public class GrupoServiceImpl implements GrupoService {
     public void eliminar(Long id) {
         Grupo grupo = obtenerGrupo(id);
 
-        log.info("Eliminando grupo con id: {}", id);
+        log.info("Eliminando grupo {}", id);
 
         if (inscripcionRepository.existsByGrupoId(id))
-            throw new EntidadRelacionadaException("No se puede eliminar el grupo porque tiene inscripciones asociadas");
+            throw new EntidadRelacionadaException("No se puede eliminar, el grupo tiene inscripciones");
 
         if (horarioRepository.existsByGrupoId(id))
-            throw new EntidadRelacionadaException("No se puede eliminar el grupo porque tiene horarios asociados");
+            throw new EntidadRelacionadaException("No se puede eliminar, el grupo tiene horarios");
 
         grupoRepository.delete(grupo);
-        log.info("Grupo con id {} eliminado", id);
+        log.info("Grupo {} eliminado", id);
     }
 
     private Grupo obtenerGrupo(Long id) {
         return ServiceUtils.obtenerEntidadOException(grupoRepository, id, Grupo.class);
-    }
-
-    private void validarGrupoDuplicado(Long idCurso, Long idMaestro, Long idAula, String periodo) {
-        if (grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodo(idCurso, idMaestro, idAula, periodo.trim()))
-            throw new IllegalArgumentException("Ya existe un grupo con esa combinación de curso, maestro, aula y periodo");
-    }
-
-    private void validarGrupoDuplicadoAlActualizar(Long idCurso, Long idMaestro, Long idAula, String periodo, Long id) {
-        if (grupoRepository.existsByCursoIdAndMaestroIdAndAulaIdAndPeriodoAndIdNot(idCurso, idMaestro, idAula, periodo.trim(), id))
-            throw new IllegalArgumentException("Ya existe un grupo con esa combinación de curso, maestro, aula y periodo");
     }
 }
